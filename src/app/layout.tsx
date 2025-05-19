@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { Navigation } from "@/components/navigation";
 import { Providers } from "@/components/providers";
+import { ChatBot } from "@/components/ChatBot";
 
 export const metadata: Metadata = {
   title: "Next.js Auth App",
@@ -19,6 +20,7 @@ export default function RootLayout({
         <Providers>
           <Navigation />
           <main>{children}</main>
+          <ChatBot />
         </Providers>
       </body>
     </html>

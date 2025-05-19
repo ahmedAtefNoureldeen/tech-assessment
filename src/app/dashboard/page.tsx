@@ -1,8 +1,14 @@
 import { auth } from "@/auth";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { prisma } from "@/lib/prisma";
 
 export default async function DashboardPage() {
   const session = await auth();
+  const activeEmployees = await prisma.employee.count({
+    where: {
+      isActive: true
+    }
+  });
 
   return (
     <div className="container p-6">
@@ -25,7 +31,7 @@ export default async function DashboardPage() {
             <CardDescription>Current employee count</CardDescription>
           </CardHeader>
           <CardContent>
-            <p className="text-3xl font-semibold">24</p>
+            <p className="text-3xl font-semibold">{activeEmployees}</p>
           </CardContent>
         </Card>
         

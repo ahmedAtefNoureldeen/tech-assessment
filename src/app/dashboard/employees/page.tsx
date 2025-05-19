@@ -5,7 +5,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { EmployeeFormModal, EmployeeFormData } from "@/components/EmployeeFormModal";
-import { format } from "date-fns";
+import { EmployeeFilters } from "@/components/EmployeeFilters";
+import { format, isWithinInterval, parseISO } from "date-fns";
 
 interface Employee {
   id: string;
@@ -15,17 +16,34 @@ interface Employee {
   isActive: boolean;
 }
 
+interface Filters {
+  name: string;
+  minSalary: string;
+  maxSalary: string;
+  startDate: string;
+  endDate: string;
+}
+
 export default function EmployeesPage() {
   const [employees, setEmployees] = useState<Employee[]>([]);
+  const [filteredEmployees, setFilteredEmployees] = useState<Employee[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedEmployee, setSelectedEmployee] = useState<EmployeeFormData | undefined>();
   const [isLoading, setIsLoading] = useState(true);
+  const [filters, setFilters] = useState<Filters>({
+    name: '',
+    minSalary: '',
+    maxSalary: '',
+    startDate: '',
+    endDate: '',
+  });
 
   const fetchEmployees = async () => {
     try {
       const response = await fetch('/api/employees');
       const data = await response.json();
       setEmployees(data);
+      setFilteredEmployees(data);
     } catch (error) {
       console.error('Error fetching employees:', error);
     } finally {
@@ -36,6 +54,25 @@ export default function EmployeesPage() {
   useEffect(() => {
     fetchEmployees();
   }, []);
+
+  useEffect(() => {
+    const filtered = employees.filter((employee) => {
+      const nameMatch = employee.name.toLowerCase().includes(filters.name.toLowerCase());
+      
+      const salaryMatch = (!filters.minSalary || employee.baseSalary >= Number(filters.minSalary)) &&
+                         (!filters.maxSalary || employee.baseSalary <= Number(filters.maxSalary));
+      
+      const dateMatch = (!filters.startDate || !filters.endDate) || 
+        isWithinInterval(new Date(employee.joiningDate), {
+          start: parseISO(filters.startDate),
+          end: parseISO(filters.endDate),
+        });
+
+      return nameMatch && salaryMatch && dateMatch;
+    });
+
+    setFilteredEmployees(filtered);
+  }, [employees, filters]);
 
   const handleCreateEmployee = async (data: EmployeeFormData) => {
     try {
@@ -112,6 +149,8 @@ export default function EmployeesPage() {
           Add Employee
         </Button>
       </div>
+
+      <EmployeeFilters filters={filters} onFilterChange={setFilters} />
       
       <Card>
         <CardHeader>
@@ -129,7 +168,7 @@ export default function EmployeesPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {employees.map((employee) => (
+              {filteredEmployees.map((employee) => (
                 <TableRow key={employee.id}>
                   <TableCell className="font-medium">{employee.name}</TableCell>
                   <TableCell>{format(new Date(employee.joiningDate), 'MMM dd, yyyy')}</TableCell>
