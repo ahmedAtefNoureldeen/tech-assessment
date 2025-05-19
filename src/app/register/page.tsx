@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { useSession } from "next-auth/react";
+import { useSession, signIn } from "next-auth/react";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -54,7 +54,18 @@ export default function RegisterPage() {
         throw new Error(data.message || "Failed to register");
       }
 
-      router.push("/login?registered=true");
+      // Sign in the user automatically after successful registration
+      const result = await signIn("credentials", {
+        email,
+        password,
+        redirect: false,
+      });
+
+      if (result?.error) {
+        throw new Error("Failed to sign in after registration");
+      }
+
+      router.push("/dashboard");
     } catch (error) {
       if (error instanceof Error) {
         setError(error.message);
