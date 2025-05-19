@@ -3,12 +3,16 @@ import { prisma } from "@/lib/prisma";
 
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  context: { params: { id: string } }
 ) {
   try {
+    // Await the params object before destructuring
+    const params = await context.params;
+    const { id } = params;
+    
     const tasks = await prisma.task.findMany({
       where: {
-        projectId: params.id,
+        projectId: id,
       },
       include: {
         assignedTo: true,
@@ -23,4 +27,4 @@ export async function GET(
       { status: 500 }
     );
   }
-} 
+}

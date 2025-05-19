@@ -98,7 +98,10 @@ export function TaskBoard({
     const newStatus = over.id as Task["status"];
     if (activeTask.status === newStatus) return;
 
-    await onTaskUpdate(active.id.toString(), { status: newStatus });
+    await onTaskUpdate(active.id.toString(), {
+      ...activeTask,
+      status: newStatus
+    });
   };
 
   const handleCreateTask = async (data: TaskFormData) => {

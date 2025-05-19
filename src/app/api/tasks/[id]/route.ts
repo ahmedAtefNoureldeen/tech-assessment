@@ -3,15 +3,17 @@ import { prisma } from "@/lib/prisma";
 
 export async function PATCH(
   request: Request,
-  { params }: { params: { id: string } }
+  context: { params: { id: string } }
 ) {
   try {
+    const params = await context.params;
+    const { id } = params;
     const body = await request.json();
     const { title, description, priority, status, assignedTo } = body;
 
     const updatedTask = await prisma.task.update({
       where: {
-        id: params.id,
+        id,
       },
       data: {
         title,
@@ -42,12 +44,13 @@ export async function PATCH(
 
 export async function DELETE(
   request: Request,
-  { params }: { params: { id: string } }
+  context: { params: { id: string } }
 ) {
   try {
+    const { id } = context.params;
     await prisma.task.delete({
       where: {
-        id: params.id,
+        id,
       },
     });
 
