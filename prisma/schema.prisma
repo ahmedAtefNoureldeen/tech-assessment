@@ -65,6 +65,7 @@ model Employee {
   baseSalary  Float
   isActive     Boolean    @default(false)
   salaries    Salary[]
+  tasks       Task[]
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 }
@@ -82,4 +83,30 @@ model Salary {
   updatedAt     DateTime @updatedAt
 
   @@unique([employeeId, month])
+}
+
+model Project {
+  id          String    @id @default(cuid())
+  name        String
+  description String?
+  startDate   DateTime
+  endDate     DateTime?
+  status      String    // Could be (active, completed, overdue)
+  tasks       Task[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model Task {
+  id          String    @id @default(cuid())
+  title       String
+  description String?
+  priority    String    // Could be "LOW", "MEDIUM", "HIGH"
+  status      String    // Could be "TODO", "IN_PROGRESS", "COMPLETED"
+  assignedTo  Employee? @relation(fields: [employeeId], references: [id])
+  employeeId  String?
+  project     Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectId   String
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 }
